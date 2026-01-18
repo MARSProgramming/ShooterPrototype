@@ -16,15 +16,17 @@ public class RobotContainer {
   Shooter shooter;
 
   public RobotContainer() {
-    configureBindings();
     cowl = new Cowl();
     shooter = new Shooter();
+
     pilot = new CommandXboxController(0);
+    configureBindings();
   }
 
   private void configureBindings() {
     pilot.rightBumper().whileTrue(cowl.outputForwardTunable());
     pilot.leftBumper().whileTrue(cowl.outputBackwardTunable());
+
     pilot.leftTrigger().whileTrue(shooter.setOutputTunable());
     pilot.rightTrigger().whileTrue(shooter.setVelocityTunable());
   }

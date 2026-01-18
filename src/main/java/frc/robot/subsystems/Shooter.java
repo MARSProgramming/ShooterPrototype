@@ -20,8 +20,8 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 public class Shooter extends SubsystemBase {
     private TalonFX master;
     private TalonFX follower;  
-    private final IntegerSubscriber shooterVelocity = DogLog.tunable("Shooter/TunableVelocity", 2000);
-    private final DoubleSubscriber percentOut = DogLog.tunable("Shooter/TunablePercentOut", 0.1);
+    private final IntegerSubscriber shooterVelocity = DogLog.tunable("Shooter/TunableShooterVelocity", 2000);
+    private final DoubleSubscriber percentOut = DogLog.tunable("Shooter/TunableShooterOutput", 0.1);
 
     DutyCycleOut dc;
     VelocityVoltage vl;
