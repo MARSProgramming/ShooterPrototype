@@ -29,6 +29,8 @@ public class RobotContainer {
 
     pilot.leftTrigger().whileTrue(shooter.setOutputTunable());
     pilot.rightTrigger().whileTrue(shooter.setVelocityTunable());
+
+    pilot.a().onTrue(cowl.zeroPosition());
   }
 
   public Command getAutonomousCommand() {

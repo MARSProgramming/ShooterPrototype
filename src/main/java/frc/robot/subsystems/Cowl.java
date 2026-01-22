@@ -1,6 +1,5 @@
 package frc.robot.subsystems;
 
-import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -16,7 +15,9 @@ public class Cowl extends SubsystemBase {
 
     DutyCycleOut dc;
 
-    private final DoubleSubscriber output = DogLog.tunable("Cowl/TunableCowlOutput", 0.1);
+    private final DoubleSubscriber outputSubscriber = DogLog.tunable("Cowl/TunableCowlOutput", 0.1);
+
+    double storedOutput = outputSubscriber.get();
 
     
     public Cowl() {
@@ -27,14 +28,14 @@ public class Cowl extends SubsystemBase {
         TalonFXConfiguration cowlConfiguration = new TalonFXConfiguration();
         cowlConfiguration.Feedback.SensorToMechanismRatio = 1;
        //  cowlConfiguration.MotorOutput.Inverted = false; change as needed
-        cowl_motor.setNeutralMode(NeutralModeValue.Brake);
         cowl_motor.getConfigurator().apply(cowlConfiguration);
+        cowl_motor.setNeutralMode(NeutralModeValue.Brake);
 
     }
 
     public Command outputForwardTunable() {
         return runEnd(() -> {
-            cowl_motor.setControl(dc.withOutput(output.get()));
+            cowl_motor.setControl(dc.withOutput(storedOutput));
         }, () -> {
             cowl_motor.set(0);
         });
@@ -42,7 +43,7 @@ public class Cowl extends SubsystemBase {
 
     public Command outputBackwardTunable() {
         return runEnd(() -> {
-            cowl_motor.setControl(dc.withOutput(-output.get()));
+            cowl_motor.setControl(dc.withOutput(-storedOutput));
         }, () -> {
             cowl_motor.set(0);
         });
@@ -56,10 +57,18 @@ public class Cowl extends SubsystemBase {
         });
     }
 
+    public Command zeroPosition() {
+        return runOnce(()-> {
+            cowl_motor.setPosition(0);
+        });
+    }
+ 
     @Override
     public void periodic() {
         DogLog.log("Cowl/Position", cowl_motor.getPosition().getValueAsDouble());
         DogLog.log("Cowl/AppliedOutput", cowl_motor.getMotorVoltage().getValueAsDouble());
         DogLog.log("Cowl/Temperature", cowl_motor.getDeviceTemp().getValueAsDouble());
+
+        storedOutput = outputSubscriber.get();  
     }
 }
