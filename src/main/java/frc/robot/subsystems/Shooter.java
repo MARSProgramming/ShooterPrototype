@@ -5,8 +5,10 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.Follower;
+import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
@@ -31,31 +33,31 @@ public class Shooter extends SubsystemBase {
 
     DutyCycleOut dc;
     VelocityVoltage vl;
+    MotionMagicVelocityVoltage mmvv;
     
     public Shooter() {
         dc = new DutyCycleOut(0);
         vl = new VelocityVoltage(0);
+        mmvv = new MotionMagicVelocityVoltage(0);
     
         master = new TalonFX(9);
         follower = new TalonFX(10); 
 
-        master.getConfigurator().apply(new MotorOutputConfigs().withInverted(InvertedValue.Clockwise_Positive));
+        TalonFXConfiguration shooterConfig = new TalonFXConfiguration();
+
+        shooterConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+        shooterConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+
+        shooterConfig.Slot0.kP = 0.5;
+        shooterConfig.Slot0.kI = 2;
+        shooterConfig.Slot0.kD = 0;
+        shooterConfig.Slot0.kV = 12.0 / RPM.of(6000).in(Units.RotationsPerSecond);
+
+        master.getConfigurator().apply(shooterConfig);
+        follower.getConfigurator().apply(shooterConfig);
+
         follower.setControl(new Follower(9, MotorAlignmentValue.Opposed));
 
-        // tune later
-        Slot0Configs slot0 = new Slot0Configs()
-                    .withKP(0.5)
-                    .withKI(2)
-                    .withKD(0)
-                    .withKV(12.0 / RPM.of(6000).in(Units.RotationsPerSecond)); // 12 volts when requesting max RPS
-
-
-
-        master.getConfigurator().apply(slot0);
-        follower.getConfigurator().apply(slot0);
-
-        master.setNeutralMode(NeutralModeValue.Coast);
-        follower.setNeutralMode(NeutralModeValue.Coast);
     }
 
     public Command setOutput(double output) {
@@ -95,13 +97,14 @@ public class Shooter extends SubsystemBase {
     
     @Override
     public void periodic() {
-        DogLog.log("Master/Velocity", master.getVelocity().getValueAsDouble());
+        DogLog.log("Shooter/Master/VelocityRPM", RotationsPerSecond.of(master.getVelocity().getValueAsDouble()).in(Units.RPM));
+        DogLog.log("Shooter/Follower/VelocityRPM", RotationsPerSecond.of(follower.getVelocity().getValueAsDouble()).in(Units.RPM));
 
-        DogLog.log("Master/VelocityRecalculated", RotationsPerSecond.of(master.getVelocity().getValueAsDouble()).in(Units.RPM));
+        DogLog.log("Shooter/Master/AppliedVoltage", master.getMotorVoltage().getValueAsDouble());
+        DogLog.log("Shooter/Follower/AppliedVoltage", master.getMotorVoltage().getValueAsDouble());
 
-        DogLog.log("Master/AppliedOutput", master.getMotorVoltage().getValueAsDouble());
-        DogLog.log("Master/Temperature", master.getDeviceTemp().getValueAsDouble());
-        DogLog.log("Follower/Temperature", follower.getDeviceTemp().getValueAsDouble());
+        DogLog.log("Shooter/Master/Temperature", master.getDeviceTemp().getValueAsDouble());
+        DogLog.log("Shooter/Follower/Temperature", follower.getDeviceTemp().getValueAsDouble());
 
         storedNewVelocity = shooterVelocitySubscriber.get();
         storedpercentOut = percentOutSubscriber.get();

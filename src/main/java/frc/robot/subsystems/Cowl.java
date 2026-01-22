@@ -16,7 +16,6 @@ public class Cowl extends SubsystemBase {
     DutyCycleOut dc;
 
     private final DoubleSubscriber outputSubscriber = DogLog.tunable("Cowl/TunableCowlOutput", 0.05);
-
     double storedOutput = outputSubscriber.get();
 
     
@@ -26,11 +25,10 @@ public class Cowl extends SubsystemBase {
         dc = new DutyCycleOut(0);
 
         TalonFXConfiguration cowlConfiguration = new TalonFXConfiguration();
-        cowlConfiguration.Feedback.SensorToMechanismRatio = 1;
-       //  cowlConfiguration.MotorOutput.Inverted = false; change as needed
-        cowl_motor.getConfigurator().apply(cowlConfiguration);
-        cowl_motor.setNeutralMode(NeutralModeValue.Brake);
+        cowlConfiguration.Feedback.SensorToMechanismRatio = 1; // replace with reduction
+        cowlConfiguration.MotorOutput.NeutralMode = NeutralModeValue.Brake;
 
+        cowl_motor.getConfigurator().apply(cowlConfiguration);
     }
 
     public Command outputForwardTunable() {
@@ -69,6 +67,7 @@ public class Cowl extends SubsystemBase {
         DogLog.log("Cowl/AppliedOutput", cowl_motor.getMotorVoltage().getValueAsDouble());
         DogLog.log("Cowl/Temperature", cowl_motor.getDeviceTemp().getValueAsDouble());
 
+        // update tunable values
         storedOutput = outputSubscriber.get();  
     }
 }
