@@ -15,7 +15,7 @@ public class Cowl extends SubsystemBase {
 
     DutyCycleOut dc;
 
-    private final DoubleSubscriber outputSubscriber = DogLog.tunable("Cowl/TunableCowlOutput", 0.1);
+    private final DoubleSubscriber outputSubscriber = DogLog.tunable("Cowl/TunableCowlOutput", 0.05);
 
     double storedOutput = outputSubscriber.get();
 
